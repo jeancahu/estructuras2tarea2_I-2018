@@ -1,10 +1,14 @@
 /*
  * Ejercicio 2: Cálculo de la distancia más corta
  * 
+ * Se hace uso de la función newComb para la generación de todas las posibles permutaciones entre los elementos del vector que contiene todas las ciudades menos la origen.
+ * 
+ * Las ciudades se representan como sigue: San José: 0, Limón: 1, San Franciso: 2, Alajuela: 3, Liberia: 4, Paraíso: 5, Puntarenas: 6, San Isidro: 7 
+ * 
+ *  
  */ 
 #include <stdio.h>
 #include <mpi.h>
-#include <math.h>
 
 
 #define NUM_CITIES 8   
@@ -21,35 +25,38 @@ void swap (int *x, int *y)
     *y = temp;
 }
 
-//-----------------------------------------ESTOS DOS T_T..cómo puedo definirlos 
-//                                                      de una forma menos cochina?
 
-int vectorComb[TOT_COMBINATIONS];
-int tot=0;
+//Una vez alcanzada una nueva combinación, concatena los elementos del array a[] para generar un nuevo elemento 
+//que agrega al vector de todas las combinaciones vectorComb, del cual recibe el puntero. 
+//El parámetro tot determina la posición de vectorComb en la que escribirá, y n el tamaño del array a
 
-//-----------------------------------------
-void printArr(int a[],int n)
+void fillArray(int a[],int n, int* vectorComb, int* tot)
 {
     int comb=0;
     for (int i=0; i<n; i++)
     {
         comb = 10*comb + a[i];
     }
-    vectorComb[tot]=comb;
-    tot++;
+    vectorComb[*tot]=comb;
+    *tot = *tot + 1;
 }
 
-void newComb(int size, int posComb[])
+
+//Generación de combinaciones
+//Recibe el tamaño del número a generar, un array con los elementos a permutar, el puntero al vectorComb que contendrá
+//los resultados, y el valor tot que indicará a la función fillArray en qué posición del arreglo escribir
+
+void newComb(int size, int posComb[], int* vectorComb, int* tot)
 {
     if (size == 1)
     {
-        printArr(posComb,COMB_SIZE);
+        fillArray(posComb,COMB_SIZE, vectorComb, tot);
         return;
     }
  
     for (int i=0; i<size; i++)
     {
-        newComb(size-1, posComb); //Llamado recursivo hasta llegar a condicion límite
+        newComb(size-1, posComb, vectorComb, tot); //Llamado recursivo hasta llegar a condicion límite
         if (size%2==1)
             swap(&posComb[0], &posComb[size-1]);
         else
@@ -62,6 +69,8 @@ int main(int argc, char** argv)
     int rank, size;
     int counterTotal=0;
     int counterPrimProc;
+    int vectorComb[TOT_COMBINATIONS];
+    int tot=0;
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -70,7 +79,7 @@ int main(int argc, char** argv)
     int localMin=10000;
     int totalMin=10000;
     
-    //Llenamos matriz
+    //Matriz de adyacencia
     int AdjMatrix[NUM_CITIES][NUM_CITIES]  = { 
                  {0,115,8,17,167,26,83,75},
                  {115,0,120,129,272,92,197,100},
@@ -81,9 +90,12 @@ int main(int argc, char** argv)
                  {83,197,78,69,98,108,0,141},
                  {75,100,83,91,236,55,141,0}};
     
+    //Todas las ciudades sin contar el origen
     int posComb[] = {1, 2, 3, 4, 5, 6, 7};
     int tam = NUM_CITIES -1;
-    newComb(tam, posComb);
+    
+    //Generamos todas las posibles rutas
+    newComb(tam, posComb, vectorComb, &tot); 
     
     if( rank == 0)
     {
