@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#define TOP_COUNT_VALUE=500000;
+#define TOP_COUNT_VALUE 500000
 
 int prime(int testValue)
 {
