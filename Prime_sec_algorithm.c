@@ -1,6 +1,10 @@
 #include <stdio.h>
 
+<<<<<<< HEAD
 #define TOP_COUNT_VALUE 500000
+=======
+#define TOP_COUNT_VALUE=500000;
+>>>>>>> 4bf28e0... add: Generador de primos secuencial
 
 int prime(int testValue)
 {
