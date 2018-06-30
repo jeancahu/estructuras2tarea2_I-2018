@@ -31,30 +31,44 @@ void fillMatrix(int filas, int columnas, int mat[filas][columnas])
 int main(int argc, char ** argv)
 {
     
-    int i, j, k, rank, size;//tag = 99, sum = 0;
+    int rank, size;
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-        
+    int filas;
+    int columnas;
     
-    //Matriz
-    if( rank == 0)
+    if ( rank == 0)
     {
-        //Generación aleatoria de matriz
-        int filas=0, columnas=0;
+        //Parametros de matriz
+        filas=0;
+        columnas=0;
         printf("Inserte numero de filas: ");
         fflush(stdout);
         scanf("%d", &filas);
         printf("Inserte número de columnas: ");
         fflush(stdout);
         scanf("%d", &columnas);
-        int matriz[filas][columnas];
+        
+        
+        MPI_Bcast(filas, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(columnas,1, MPI_INT, 0, MPI_COMM_WORLD);
+    }    
+    MPI_Barrier( MPI_COMM_WORLD );
+    
+    int vector[columnas][1];
+    int matriz[filas][columnas];
+    
+    
+    //Matriz
+    if( rank == 0)
+    {
+        //Generación aleatoria de matriz
         fillMatrix(filas, columnas, matriz);
-        printf("Matriz: \n");
-        printMatrix(filas, columnas, matriz);
+        //printf("Matriz: \n");
+        //printMatrix(filas, columnas, matriz);
         
         //Generación del vector
-        int vector[columnas][1];
         fillMatrix(columnas, 1, vector);
         printf("Vector: \n");
         printMatrix(columnas, 1, vector);
@@ -62,14 +76,27 @@ int main(int argc, char ** argv)
         //Vector resultante
         int Result[1][filas];
         
-        //Receive buffer
-        int recBuff[columnas];
-        //Usamos Scatter para enviar filas de la matriz a cada proce
-        MPI_Scatter(matriz, columnas, MPI_INT, recBuff, columnas, MPI_INT,0,MPI_COMM_WORLD);
-
+        //Enviamos matriz y vector a todos
+        MPI_Bcast(matriz, filas*columnas, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Bcast(vector, columnas, MPI_INT, 0, MPI_COMM_WORLD);
+        
+        int contFilas=0;
+        while(contFilas<filas)
+        {
+            //MPI_Send(matriz[contFilas], columnas, MPI_INT, contFilas, contFilas, MPI_COMM_WORLD);
+        }
+        
     }
+    else
+    {
+        int i;
+        //MPI_Recv(matriz[i], columnas, MPI_INT, rank-1, 0, MPI_COMM_WORLD, &status);
+        printMatrix(filas, columnas, matriz);
+    }
+        
+        
 
-    MPI_Barrier(MPI_COMM_WORLD);  
+    
     MPI_Finalize();
     return 0;    
    
