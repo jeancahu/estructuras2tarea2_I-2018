@@ -48,7 +48,7 @@ int runInterval(int startValue, int size)
         if(prime(testValue)==1)
         {
             counterPrimProc++;
-            //printf("%d\n", testValue);
+            printf("%d\n", testValue);
         }
         counterInterval+=1;
         testValue+=2*size;    
@@ -68,7 +68,7 @@ int runFinalInterval(int startValue, int size, int topCount)
         if(prime(testValue)==1)
         {
             counterPrimProc++;
-            //printf("%d\n", testValue);
+            printf("%d\n", testValue);
         }
         testValue+=2;    
     }
@@ -92,7 +92,7 @@ int main(int argc, char** argv)
     if( rank == 0)
     {    
         counterPrimProc= runInterval(testValue, size) + 1; //Porque incluye el 2
-        //printf("2\n");
+        printf("2\n");
         MPI_Reduce(&counterPrimProc,&counterTotal, 1,MPI_INT,MPI_SUM, 0, MPI_COMM_WORLD);
          if(counterTotal<TOP_COUNT_VALUE) //Si no se alcanzó el valor requerido, master busca los que faltan
          {
