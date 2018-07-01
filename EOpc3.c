@@ -3,7 +3,7 @@
 
 int main(int argc, char ** argv)
 {
-    int rank, size;
+    int rank, size, token;
     
     
     MPI_Status status;
