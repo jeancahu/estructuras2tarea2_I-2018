@@ -30,15 +30,13 @@ int main(int argc, char ** argv)
 
   // Cantidad de datos
   int tam;
-  // Cantidad de datos en procesos hijos
-  int local_tam;
   
   // Total del promedio por proceso
   int total = 0;
-  
+  int* total_buf;
+  total_buf = malloc( size * sizeof(int));
   // Pointer to vector
   int* vector;
-  int* sub_vector;
     
   // Root process
   if( rank == root ) {
@@ -47,29 +45,51 @@ int main(int argc, char ** argv)
     fflush(stdout);
     scanf("%d", &tam);
 
-    vector = malloc(tam * sizeof(int));
+    vector = malloc( tam * sizeof(int));
     fillVector(tam, vector);
-    
+
+    printf("\n\nElementos del vector:\n\n");
     for (i = 0; i < tam; i++) {
       printf("%d\n", vector[i]);
     }
+    printf("\n\n");
+  } else {
+    vector = malloc( (tam/size) * sizeof(int));
+  }
+  
+  MPI_Bcast( &tam, 1, MPI_INT, root, MPI_COMM_WORLD);
+
+  // printf("%d %d %d\n", total, tam, size);
+  
+  MPI_Scatter(vector, tam/size, MPI_INT,
+	      vector, tam/size, MPI_INT, root,
+	      MPI_COMM_WORLD);
+  
+  for (i = 0; i < tam/size; i++) {
+    // printf("%d %d\n", rank, vector[i]);
+    total = total + vector[i];
   }
 
-  sub_vector = malloc( (tam/size) * sizeof(int));
-  MPI_Scatter( &tam, 1, MPI_INT, &local_tam, 1, MPI_INT, root, MPI_COMM_WORLD);
-  MPI_Scatter(vector, tam/size, MPI_INT, sub_vector, tam/size, MPI_INT, root, MPI_COMM_WORLD);
+  // printf("%d %d %d\n", total, tam, size);
+  total = total / ( tam / size );
 
+  printf("Total individual: %d\n", total);
   
-  
-  for (i = 0; i < local_tam/size; i++) {
-    printf("%d %d\n", rank, sub_vector[i]);
-    total = total + sub_vector[i];
+  MPI_Gather( &total, 1, MPI_INT,
+  	      total_buf, 1, MPI_INT, root,
+  	      MPI_COMM_WORLD);
+
+  if ( rank == root ) {
+    printf("\n\n");
+    total = 0;
+    for (i = 0; i < size; i++) {
+      //printf("%d\n", total_buf[i]);
+      total = total + total_buf[i];  
+    }
+
+    printf("El promedio es: %d\n", total);
+    
   }
-
-  total = total / local_tam;
-
-  printf("%d\n", total);
-
   MPI_Finalize();
 
   return 0;    
