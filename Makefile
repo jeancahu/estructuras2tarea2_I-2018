@@ -1,15 +1,13 @@
 # Basic Makefile
 
-INPUT_00 = com2p.c
+CC = mpicc
 
-TARGET_00 = com2p.x
+TARGET = E1.x E2.x E3.x 
 
-all: ${TARGET_00}
+all: ${TARGET}
 
-${TARGET_00}: ${INPUT_00}
-	mpicc -o ${TARGET_00} ${INPUT_00}
-
-# %.c:
+%.x: %.c
+	${CC} $< -o $@
 
 clean:
 	rm -rf *.x
